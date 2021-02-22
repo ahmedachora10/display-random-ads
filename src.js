@@ -53,21 +53,24 @@ const displayRandomAds = {
             // Add script tag on HTML page
             document.body.appendChild(script);
         }
-    }
+    },
+
 };
 
 
 displayRandomAds.init([
     {
-        ads: '<script src="https://global.storeacdn.com/ajspop.js"></script>',
+        ads: `<script src="https://global.storeacdn.com/ajspop.js"></script>`,
         display: false
     },
     {
-        ads: '<script data-cfasync="false" type="text/javascript" src="//creamssicsite.com/tSMc54j7yD1M6/19111"></script>',
+        ads: `<script data-cfasync="false" type="text/javascript" src="//creamssicsite.com/tSMc54j7yD1M6/19111"></script>`,
         display: false
     },
     {
-        ads: '<script>window.u_cfg={pp:2,dl:10000,ak:"nte9ac20akGbfW",si:"161f9062a1e6ed4efe1e4bf80", pType:"newTab", kw:"streaming"}</script>',
+        ads: `<script>window.u_cfg={pp:2,dl:10000,ak:"nte9ac20akGbfW",si:"161f9062a1e6ed4efe1e4bf80", pType:"newTab", kw:"streaming"}</script>`,
         display: false
     }
 ]);
+
+console.log('<script src="https://global.storeacdn.com/ajspop.js"></script>'.replace(/\"/g, '\\"'));

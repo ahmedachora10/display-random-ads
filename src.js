@@ -6,19 +6,16 @@
 
 const displayRandomAds = {
 
+    isMatch(str) {
+        return /<\/([a-z]+)>$/ig.exec(str);
+    },
+
     getContent(str) {
         const domParser = new DOMParser();
-        return domParser.parseFromString(str, 'text/html').scripts[0];
+        return domParser.parseFromString(str, 'text/html');
     },
 
     init(ads) {
-
-        // Create a script element
-        const script = document.createElement('script');
-
-        // Assigning an id to script element
-        script.id = "script";
-
 
         // Get all ads that not showing yet
         let remainingAds = ads.filter(ad => ad.display === false);
@@ -36,31 +33,47 @@ const displayRandomAds = {
 
             const singleAd = remainingAds[rand];
 
-            const scriptContent = this.getContent(singleAd.ads);
 
-            if (scriptContent.getAttributeNames().length !== 0) {
-
-                scriptContent.getAttributeNames().forEach(attribute => script.setAttribute(attribute, scriptContent.getAttribute(attribute)));
-
-            } else {
-                // Add script content
-                script.textContent = scriptContent.textContent;
+            if (this.isMatch(singleAd.ads) === null) {
+                return new Error('Your input is not a Javascript or an HTML code!');
             }
+
+            const tagName = this.isMatch(singleAd.ads)[1];
+            const HTMLElement = this.getContent(singleAd.ads).getElementsByTagName(tagName)[0];
+            console.log(HTMLElement);
+
+            if (tagName == 'script') {
+
+                // Create a script element
+                var script = document.createElement('script');
+
+                // Assigning an id to script element
+                script.id = "script";
+
+                if (HTMLElement.getAttributeNames().length !== 0) {
+
+                    HTMLElement.getAttributeNames().forEach(attribute => script.setAttribute(attribute, HTMLElement.getAttribute(attribute)));
+
+                }
+                // Add script content
+                script.textContent = HTMLElement.textContent;
+            }
+
+
+            // Add script tag on HTML page
+            document.body.appendChild(script ?? HTMLElement);
 
             // Turn 'display' property to true
             singleAd.display = true;
-
-            // Add script tag on HTML page
-            document.body.appendChild(script);
         }
-    },
+    }
 
 };
 
 
 displayRandomAds.init([
     {
-        ads: `<script src="https://global.storeacdn.com/ajspop.js"></script>`,
+        ads: `<a href="https://smrturl.co/o/165013/53188596?s1=" target="_blank"><img src="https://img.akwam.co/uploads/hrBrn.gif" alt="click"></a>`,
         display: false
     },
     {
@@ -68,9 +81,8 @@ displayRandomAds.init([
         display: false
     },
     {
-        ads: `<script>window.u_cfg={pp:2,dl:10000,ak:"nte9ac20akGbfW",si:"161f9062a1e6ed4efe1e4bf80", pType:"newTab", kw:"streaming"}</script>`,
+        ads: `<script></script>`,
         display: false
     }
 ]);
 
-console.log('<script src="https://global.storeacdn.com/ajspop.js"></script>'.replace(/\"/g, '\\"'));

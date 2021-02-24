@@ -5,84 +5,115 @@
  */
 const displayRandomAds = {
 
+    /**
+     * @method isMatch
+     * @description Matches a string or object supports being matched against
+     * @param {String} str
+     * @return Array | null
+     */
     isMatch(str) {
         const regEx = /<\\?\/([a-z]+)>/ig;
         const matches = str.match(regEx);
         return matches.length > 0 ? matches.map(match => match.slice(2, match.length - 1)) : null;
     },
 
-    getContent(str) {
+    /**
+     * @method htmlParser
+     * @description Parse HTML source code from a String into a DOM Document
+     * @param {String} str 
+     * @return DOM Document
+     */
+    htmlParser(str) {
         const domParser = new DOMParser();
         return domParser.parseFromString(str, 'text/html');
     },
 
+    /**
+     * 
+     * @param {Array} ads Array of ads
+     * @param {Element} targetElementClass
+     * @returns void
+     */
     init(ads, targetElementClass) {
 
+        if (localStorage.getItem('ads') === null) {
+            localStorage.setItem('ads', JSON.stringify(ads));
+        }
+
+        const parseAds = JSON.parse(localStorage.getItem('ads'));
+
         // Get all ads that not showing yet
-        let remainingAds = ads.filter(ad => ad.display === false);
+        let remainingAds = parseAds.filter(ad => ad.display === false);
 
         // Check if all ads are displaying
         if (remainingAds.length === 0) {
 
-            // Reset 'display' property to Init value
-            ads.forEach(ad => ad.display = false);
+            // Return ads to Initial values
+            localStorage.setItem('ads', JSON.stringify(ads));
+
+            // Run a function again
+            return this.init(ads, targetElementClass);
+
+        }
+
+        // Get a Random Number Based on Length of Ads Array
+        const rand = Math.floor(Math.random() * remainingAds.length);
+
+        const singleAd = remainingAds[rand];
+
+        const HTMLTag = this.isMatch(singleAd.ads);
+
+        // Check if element is HTML Element
+        if (HTMLTag === null) {
+            return new Error('Your input is not a Javascript or an HTML code!');
+        }
+
+        // Convert Collection of elements to Array
+        const HTMLElement = Array.from(this.htmlParser(singleAd.ads).getElementsByTagName(HTMLTag[0]));
+
+        // Initial empty Array
+        const scriptsContainer = [];
+
+        // Check if HTML element is 'script' tag
+        if (HTMLTag[0] == 'script') {
+
+            // Loop through HTMLElement Array
+            HTMLElement.forEach(scriptTag => {
+
+                // Create a script element
+                var script = document.createElement('script');
+
+                // Assigning an id to script element
+                // script.id = "script";
+
+                // Check if script has any Attribute
+                if (scriptTag.getAttributeNames().length !== 0) {
+
+                    // Add all attributes to new script tag
+                    scriptTag.getAttributeNames().forEach(attribute => script.setAttribute(attribute,
+                        scriptTag.getAttribute(attribute)));
+
+                }
+                // Add script content
+                script.textContent = scriptTag.textContent;
+
+                // Push all scripts in  scriptsContainer variable
+                scriptsContainer.push(script);
+
+            });
 
         } else {
 
-            // Get a Random Number Based on Length of Ads Array
-            const rand = Math.floor(Math.random() * remainingAds.length);
+            scriptsContainer.push(HTMLElement[0]);
 
-            const singleAd = remainingAds[rand];
-
-            const HTMLTag = this.isMatch(singleAd.ads);
-
-            // Check if element is HTML Element
-            if (HTMLTag === null) {
-                return new Error('Your input is not a Javascript or an HTML code!');
-            }
-
-            // Convert Collection of elements to Array
-            const HTMLElement = Array.from(this.getContent(singleAd.ads).getElementsByTagName(HTMLTag[0]));
-
-            // Initial empty Array
-            const scriptsContainer = [];
-
-            // Check if HTML element is 'script' tag
-            if (HTMLTag[0] == 'script') {
-
-                HTMLElement.forEach(scriptTag => {
-                    console.log(scriptTag);
-
-                    // Create a script element
-                    var script = document.createElement('script');
-
-                    // Assigning an id to script element
-                    script.id = "script";
-
-                    // Check if script has any Attribute
-                    if (scriptTag.getAttributeNames().length !== 0) {
-
-                        // Add all attributes to new script tag
-                        scriptTag.getAttributeNames().forEach(attribute => script.setAttribute(attribute,
-                            scriptTag.getAttribute(attribute)));
-
-                    }
-                    // Add script content
-                    script.textContent = scriptTag.textContent;
-
-                    // Push all scripts in  scriptsContainer variable
-                    scriptsContainer.push(script);
-                });
-            } else {
-                scriptsContainer.push(HTMLElement[0]);
-            }
-
-            // Add script tag on HTML page
-            document.querySelector(targetElementClass).append(...scriptsContainer);
-
-            // Turn 'display' property to true
-            singleAd.display = true;
         }
+
+        // Turn 'display' property to true
+        singleAd.display = true;
+        localStorage.setItem('ads', JSON.stringify(remainingAds));
+
+        // Add script tag on HTML page
+        document.querySelector(targetElementClass).append(...scriptsContainer);
 
     }
 

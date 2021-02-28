@@ -139,4 +139,4 @@ const ads = [
 
 
 // Run a method init
-displayRandomAds.init(ads, '#container');
+displayRandomAds.init(ads, '#ads-container');
